@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>열공 레벨업 타이머</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --accent-color: #38bdf8;
+      --text-color: #f8fafc;
+      --sub-text: #94a3b8;
+      --bar-bg: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 90%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .level-badge {
+      align-self: center;
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      padding: 0.5rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .timer-display {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent-color);
+      margin: 0.5rem 0;
+    }
+
+    .exp-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .exp-bar-bg {
+      background-color: var(--bar-bg);
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .exp-bar-fill {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .exp-text {
+      font-size: 0.875rem;
+      color: var(--sub-text);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    button {
+      background-color: #334155;
+      color: var(--text-color);
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #475569;
+      transform: translateY(-2px);
+    }
+
+    button.primary {
+      background-color: #0284c7;
+    }
+
+    button.primary:hover {
+      background-color: #0369a1;
+    }
+
+    button.fullscreen-btn {
+      background-color: transparent;
+      border: 1px solid var(--bar-bg);
+      color: var(--sub-text);
+    }
+
+    button.fullscreen-btn:hover {
+      color: var(--text-color);
+      border-color: var(--sub-text);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="app">
+    <div class="level-badge" id="levelDisplay">Lv.1 집중 Master</div>
+    
+    <div class="timer-display" id="timeDisplay">00시간 00분</div>
+
+    <div class="exp-container">
+      <div class="exp-bar-bg">
+        <div class="exp-bar-fill" id="expFill"></div>
+      </div>
+      <div class="exp-text">
+        <span>경험치 (EXP)</span>
+        <span id="expText">0 / 60 분</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="startBtn">시작</button>
+      <button id="resetBtn">초기화</button>
+      <button class="fullscreen-btn" id="fullScreenBtn">전체화면</button>
+    </div>
+  </div>
+
+  <script>
+    // 브라우저 저장소에서 이전 기록을 불러오고, 없으면 0으로 시작
+    let totalMinutes = parseInt(localStorage.getItem('studyTotalMinutes')) || 0;
+    let timerId = null;
+    let isRunning = false;
+
+    const timeDisplay = document.getElementById('timeDisplay');
+    const levelDisplay = document.getElementById('levelDisplay');
+    const expFill = document.getElementById('expFill');
+    const expText = document.getElementById('expText');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const fullScreenBtn = document.getElementById('fullScreenBtn');
+
+    // 페이지 접속 시 저장되어 있던 시간으로 화면 업데이트
+    updateDisplay();
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      startBtn.textContent = '일시정지';
+      
+      timerId = setInterval(() => {
+        totalMinutes++;
+        saveProgress(); // 1분 늘어날 때마다 자동 저장
+        updateDisplay();
+      }, 60000);
+    }
+
+    function stopTimer() {
+      isRunning = false;
+      startBtn.textContent = '시작';
+      clearInterval(timerId);
+    }
+
+    function resetTimer() {
+      if (confirm('공부 기록을 정말 초기화하시겠습니까?')) {
+        stopTimer();
+        totalMinutes = 0;
+        localStorage.removeItem('studyTotalMinutes'); // 저장 데이터 삭제
+        updateDisplay();
+      }
+    }
+
+    function saveProgress() {
+      localStorage.setItem('studyTotalMinutes', totalMinutes);
+    }
+
+    function updateDisplay() {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      const hStr = String(hours).padStart(2, '0');
+      const mStr = String(minutes).padStart(2, '0');
+      timeDisplay.textContent = `${hStr}시간 ${mStr}분`;
+
+      const level = Math.floor(totalMinutes / 60) + 1;
+      const expPercent = Math.floor((minutes / 60) * 100);
+
+      levelDisplay.textContent = `Lv.${level} 집중 Master`;
+      expFill.style.width = `${expPercent}%`;
+      expText.textContent = `${minutes} / 60 분`;
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`전체화면 전환 중 오류가 발생했습니다: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (isRunning) {
+        stopTimer();
+      } else {
+        startTimer();
+      }
+    });
+
+    resetBtn.addEventListener('click', resetTimer);
+    fullScreenBtn.addEventListener('click', toggleFullScreen);
+  </script>
+</body>
+</html>
