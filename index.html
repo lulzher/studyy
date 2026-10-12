@@ -61,33 +61,6 @@
       margin: 0.5rem 0;
     }
 
-    .exp-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .exp-bar-bg {
-      background-color: var(--bar-bg);
-      height: 12px;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .exp-bar-fill {
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      height: 100%;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-
-    .exp-text {
-      font-size: 0.875rem;
-      color: var(--sub-text);
-      display: flex;
-      justify-content: space-between;
-    }
-
     .controls {
       display: flex;
       gap: 0.75rem;
@@ -138,16 +111,6 @@
     
     <div class="timer-display" id="timeDisplay">00시간 00분</div>
 
-    <div class="exp-container">
-      <div class="exp-bar-bg">
-        <div class="exp-bar-fill" id="expFill"></div>
-      </div>
-      <div class="exp-text">
-        <span>경험치 (EXP)</span>
-        <span id="expText">0 / 60 분</span>
-      </div>
-    </div>
-
     <div class="controls">
       <button class="primary" id="startBtn">시작</button>
       <button id="resetBtn">초기화</button>
@@ -163,8 +126,6 @@
 
     const timeDisplay = document.getElementById('timeDisplay');
     const levelDisplay = document.getElementById('levelDisplay');
-    const expFill = document.getElementById('expFill');
-    const expText = document.getElementById('expText');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
     const fullScreenBtn = document.getElementById('fullScreenBtn');
@@ -212,11 +173,7 @@
       timeDisplay.textContent = `${hStr}시간 ${mStr}분`;
 
       const level = Math.floor(totalMinutes / 60) + 1;
-      const expPercent = Math.floor((minutes / 60) * 100);
-
       levelDisplay.textContent = `Lv.${level} 집중 Master`;
-      expFill.style.width = `${expPercent}%`;
-      expText.textContent = `${minutes} / 60 분`;
     }
 
     function toggleFullScreen() {
